@@ -14,11 +14,11 @@ from data_io import read_features
 # データフォルダ
 DATA_DIR = './dataset/Example/'
 
-# ダミーデータを対象とするか否か
-USING_DMY = True
-
 # 多層パーセプトロンを使用するか否か（使用しない場合は一層パーセプトロンを使用）
-USING_MLP = True
+USING_MLP = False
+
+# ダミーデータを対象とするか否か
+USING_DMY = False
 
 
 # エントリポイント
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # オプション情報の設定・表示
     epochs = max(1, args.epochs) # 総エポック数（繰り返し回数）
     batchsize = max(1, args.batchsize) # バッチサイズ
-    visualization_interval = max(1, args.v_interval) # 何エポックごとに可視化結果を表示するか
+    visualization_interval = max(0, args.v_interval) # 何エポックごとに可視化結果を表示するか
     print('device: {0}'.format(dev_str), file=sys.stderr)
     print('epochs: {0}'.format(epochs), file=sys.stderr)
     print('batchsize: {0}'.format(batchsize), file=sys.stderr)
@@ -87,7 +87,8 @@ if __name__ == '__main__':
     if USING_MLP == False:
         model.print_discriminant_func() # 一層パーセプトロンの場合，識別関数は一次式になるので，それを表示
         print('', file=sys.stderr)
-    visualizer.show(model, device=dev, samples=data, title='Initial State') # グラフを表示
+    if visualization_interval > 0:
+        visualizer.show(model, device=dev, samples=data, title='Initial State') # グラフを表示
 
     # 損失関数の定義
     loss_func = nn.CrossEntropyLoss() # softmax cross entropy
@@ -103,8 +104,8 @@ if __name__ == '__main__':
 
         # 損失関数の値が小さくなるように識別器のパラメータを更新
         model.train()
-        sum_loss = 0
         perm = np.random.permutation(n_samples)
+        sum_loss = 0
         for i in range(0, n_samples, batchsize):
             model.zero_grad()
             x = torch.tensor(features[perm[i : i + batchsize]], device=dev)
@@ -137,7 +138,7 @@ if __name__ == '__main__':
         print('  accuracy = {0:.2f}%'.format(100 * acc), file=sys.stderr)
 
         # 現状態の可視化
-        if (e + 1) % visualization_interval == 0:
+        if visualization_interval > 0 and (e + 1) % visualization_interval == 0:
             if USING_MLP == False:
                 model.print_discriminant_func() # 一層パーセプトロンの場合，識別関数は一次式になるので，それを表示
             visualizer.show(model, device=dev, samples=data, title='Epoch {0}'.format(e + 1)) # グラフを表示

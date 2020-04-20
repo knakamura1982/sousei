@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', '-g', default=-1, type=int, help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--epochs', '-e', default=10, type=int, help='number of epochs to learn')
     parser.add_argument('--batchsize', '-b', default=100, type=int, help='learning minibatch size')
+    parser.add_argument('--model', '-m', default='mnist_model.pth', type=str, help='file path of trained model')
     args = parser.parse_args()
 
     # デバイスの設定
@@ -37,15 +38,18 @@ if __name__ == '__main__':
     # オプション情報の設定・表示
     epochs = max(1, args.epochs) # 総エポック数（繰り返し回数）
     batchsize = max(1, args.batchsize) # バッチサイズ
+    model_filepath = args.model # 学習結果のモデルの保存先ファイル
     print('device: {0}'.format(dev_str), file=sys.stderr)
     print('epochs: {0}'.format(epochs), file=sys.stderr)
     print('batchsize: {0}'.format(batchsize), file=sys.stderr)
+    print('model file: {0}'.format(model_filepath), file=sys.stderr)
     print('', file=sys.stderr)
 
     # 画像の縦幅・横幅・チャンネル数の設定
     width = 28 # MNIST文字画像の場合，横幅は 28 pixels
     height = 28 # MNIST文字画像の場合，縦幅も 28 pixels
     channels = 1 # MNIST文字画像はグレースケール画像なので，チャンネル数は 1
+    color_mode = 0 if channels == 1 else 1
 
     # 学習データの読み込み
     labels, imgfiles, labeldict, labelnames = read_image_list(IMAGE_LIST, DATA_DIR)
@@ -78,28 +82,30 @@ if __name__ == '__main__':
 
         # 損失関数の値が小さくなるように識別器のパラメータを更新
         model.train()
+        n_input = 0
         sum_loss = 0
         perm = np.random.permutation(n_samples)
-        for i in range(0, n_samples, batchsize):
+        for i in range(0, n_samples, batchsize * 10): # 高速化のため，ミニバッチ10個につき1個しか学習に用いないことにする
             model.zero_grad()
-            x = torch.tensor(load_images(imgfiles, ids=perm[i : i + batchsize], mode=0), device=dev) # mode=0: グレースケール画像として読み込む
+            x = torch.tensor(load_images(imgfiles, ids=perm[i : i + batchsize], mode=color_mode), device=dev) # 学習データを読み込む
             t = torch.tensor(labels[perm[i : i + batchsize]], device=dev, dtype=torch.long)
             loss = loss_func(model(x), t)
             loss.backward()
             optimizer.step()
             sum_loss += float(loss) * len(x)
+            n_input += len(x)
             del loss
             del t
             del x
 
         # 損失関数の現在値を表示
-        print('  train loss = {0:.4f}'.format(sum_loss / n_samples), file=sys.stderr)
+        print('  train loss = {0:.4f}'.format(sum_loss / n_input), file=sys.stderr)
 
         # 評価用データに対する識別精度を計算・表示
         model.eval()
         n_failed = 0
         for i in range(0, n_samples_ev, batchsize):
-            x = torch.tensor(load_images(imgfiles_ev, ids=np.arange(i, i + batchsize), mode=0), device=dev) # mod=0: グレースケール画像として読み込む
+            x = torch.tensor(load_images(imgfiles_ev, ids=np.arange(i, i + batchsize), mode=color_mode), device=dev) # 評価用データを読み込む
             t = torch.tensor(labels_ev[i : i + batchsize], device=dev, dtype=torch.long)
             y = model.classify(x)
             y_cpu = y.to('cpu').detach().numpy().copy()
@@ -113,10 +119,13 @@ if __name__ == '__main__':
         acc = (n_samples_ev - n_failed) / n_samples_ev
         print('  accuracy = {0:.2f}%'.format(100 * acc), file=sys.stderr)
 
-        # 現在のモデルをファイルに保存
+        # 現在のモデルをファイルに自動保存
         torch.save(model.to('cpu').state_dict(), MODEL_DIR + 'model_ep{0}.pth'.format(e + 1))
         model = model.to(dev)
 
         print('', file=sys.stderr)
+
+    # 最終結果のモデルをファイルに保存
+    torch.save(model.to('cpu').state_dict(), model_filepath)
 
     print('', file=sys.stderr)

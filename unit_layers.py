@@ -6,20 +6,21 @@ import torch.nn.functional as F
 
 
 # 畳込み + バッチ正規化 + 活性化関数を行う層
-# 畳込みにおけるカーネルサイズ，パディングサイズ，ストライド幅は，出力マップが入力マップと同じサイズになるように自動決定する
+# 畳込みにおけるパディングサイズとストライド幅は，出力マップが入力マップと同じサイズになるように自動決定する
 #   - in_channels: 入力マップのチャンネル数
 #   - out_channels: 出力マップのチャンネル数
+#   - kernel_size: カーネルサイズ（奇数のみ可）
 #   - do_bn: バッチ正規化を行うか否か（Trueなら行う，Falseなら行わない）
 #   - dropout_ratio: 0以外ならその割合でドロップアウト処理を実行
 #   - activation: 活性化関数
 class Conv(nn.Module):
 
-    def __init__(self, in_channels, out_channels, do_bn=True, dropout_ratio=0, activation=F.relu):
+    def __init__(self, in_channels, out_channels, kernel_size=3, do_bn=True, dropout_ratio=0, activation=F.relu):
         super(Conv, self).__init__()
         self.do_bn = do_bn
         self.dropout_ratio = dropout_ratio
         self.activation = activation
-        self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=3, stride=1, padding=1)
+        self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=1, padding=kernel_size//2)
         if do_bn:
             self.bn = nn.BatchNorm2d(num_features=out_channels)
 

@@ -117,14 +117,14 @@ def load_single_image(filename, size=None, mode=1):
         # グレースケール画像モード
         img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE) # グレースケール画像として読み込む
         if not size is None:
-            img = cv2.resize(img, dsize=size)
+            img = cv2.resize(img, dsize=size, interpolation=cv2.INTER_NEAREST)
         img = img.reshape((1, img.shape[0], img.shape[1])) # チャンネル数 1 の三次元テンソルとなるように変形
         img = np.asarray(img, dtype=np.float32) / 255 # データ形式を 32bit float に変更し，画素値が [0,1] の範囲に収まるように正規化
     else:
         # カラー画像モード
         img = cv2.imread(filename, cv2.IMREAD_COLOR) # カラー画像として読み込む
         if not size is None:
-            img = cv2.resize(img, dsize=size)
+            img = cv2.resize(img, dsize=size, interpolation=cv2.INTER_NEAREST)
         img = img.transpose(2, 0, 1) # (チャンネル数，縦幅，横幅) の順となるように変形
         img = np.asarray(img, dtype=np.float32) / 255 # データ形式を 32bit float に変更し，画素値が [0,1] の範囲に収まるように正規化
 

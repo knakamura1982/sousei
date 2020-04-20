@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', '-g', default=-1, type=int, help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--epochs', '-e', default=10, type=int, help='number of epochs to learn')
     parser.add_argument('--batchsize', '-b', default=100, type=int, help='learning minibatch size')
+    parser.add_argument('--model', '-m', default='colorize_model.pth', type=str, help='file path of trained model')
     args = parser.parse_args()
 
     # デバイスの設定
@@ -37,9 +38,11 @@ if __name__ == '__main__':
     # オプション情報の設定・表示
     epochs = max(1, args.epochs) # 総エポック数（繰り返し回数）
     batchsize = max(1, args.batchsize) # バッチサイズ
+    model_filepath = args.model # 学習結果のモデルの保存先ファイル
     print('device: {0}'.format(dev_str), file=sys.stderr)
     print('epochs: {0}'.format(epochs), file=sys.stderr)
     print('batchsize: {0}'.format(batchsize), file=sys.stderr)
+    print('model file: {0}'.format(model_filepath), file=sys.stderr)
     print('', file=sys.stderr)
 
     # 画像の縦幅・横幅・チャンネル数の設定
@@ -68,8 +71,8 @@ if __name__ == '__main__':
     perm = np.random.permutation(n_samples_ev)
     g_gray = load_images(imgfiles_ev, ids=perm[: batchsize], mode=0) # 評価用データの一部をグレースケール画像として読み込む
     g_color = load_images(imgfiles_ev, ids=perm[: batchsize], mode=1) # 評価用データの一部をカラー画像として読み込む
-    save_progress(MODEL_DIR + 'input.png', g_gray, n_data_max=25, n_data_per_row=5, mode=0)
-    save_progress(MODEL_DIR + 'original.png', g_color, n_data_max=25, n_data_per_row=5, mode=1)
+    save_progress(MODEL_DIR + 'input.png', g_gray, n_data_max=25, n_data_per_row=5, mode=0) # 確認用に評価用データ（グレースケール版）を保存
+    save_progress(MODEL_DIR + 'original.png', g_color, n_data_max=25, n_data_per_row=5, mode=1) # 比較用に評価用データ（カラー版）を保存
     for e in range(epochs):
 
         # 現在のエポック番号を表示
@@ -77,9 +80,10 @@ if __name__ == '__main__':
 
         # 損失関数の値が小さくなるように識別器のパラメータを更新
         model.train()
+        n_input = 0
         sum_loss = 0
         perm = np.random.permutation(n_samples)
-        for i in range(0, n_samples, batchsize):
+        for i in range(0, n_samples, batchsize * 10): # 高速化のため，ミニバッチ10個につき1個しか学習に用いないことにする
             model.zero_grad()
             x = torch.tensor(load_images(imgfiles, ids=perm[i : i + batchsize], mode=0), device=dev) # mode=0: 学習データをグレースケール画像として読み込む
             t = torch.tensor(load_images(imgfiles, ids=perm[i : i + batchsize], mode=1), device=dev) # mode=1: 学習データをカラー画像として読み込む
@@ -87,12 +91,13 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
             sum_loss += float(loss) * len(x)
+            n_input += len(x)
             del loss
             del t
             del x
 
         # 損失関数の現在値を表示
-        print('  train loss = {0:.6f}'.format(sum_loss / n_samples), file=sys.stderr)
+        print('  train loss = {0:.6f}'.format(sum_loss / n_input), file=sys.stderr)
 
         # 評価用データに対するカラー化結果を保存
         model.eval()
@@ -100,17 +105,20 @@ if __name__ == '__main__':
         t = torch.tensor(g_color, device=dev)
         y = model(x)
         y_cpu = y.to('cpu').detach().numpy().copy()
-        save_progress(MODEL_DIR + 'colorized_ep{0}.png'.format(e + 1), y_cpu, n_data_max=25, n_data_per_row=5, mode=1)
+        save_progress(MODEL_DIR + 'colorized_ep{0}.png'.format(e + 1), y_cpu, n_data_max=25, n_data_per_row=5, mode=1) # カラー化結果を保存
         print('  test loss = {0:.6f}'.format(float(loss_func(y, t))), file=sys.stderr)
         del y_cpu
         del y
         del t
         del x
 
-        # 現在のモデルをファイルに保存
+        # 現在のモデルをファイルに自動保存
         torch.save(model.to('cpu').state_dict(), MODEL_DIR + 'model_ep{0}.pth'.format(e + 1))
         model = model.to(dev)
 
         print('', file=sys.stderr)
+
+    # 最終結果のモデルをファイルに保存
+    torch.save(model.to('cpu').state_dict(), model_filepath)
 
     print('', file=sys.stderr)
