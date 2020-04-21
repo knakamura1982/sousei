@@ -95,7 +95,7 @@ if __name__ == '__main__':
         ### 画像ファイル名を指定して実行した場合・・・指定された画像に対する認識結果を表示 ###
 
         img = np.asarray([load_single_image(in_filepath, mode=color_mode)]) # 入力画像を読み込む
-        show_image(img[0], mode=color_mode) # 入力画像を表示
+        show_image(img[0], title='input image', mode=color_mode) # 入力画像を表示
         x = torch.tensor(img, device=dev)
         y = model.classify(x)
         y_cpu = y.to('cpu').detach().numpy().copy()

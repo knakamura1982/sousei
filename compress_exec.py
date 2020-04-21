@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
         # 画像を読み込む
         img = np.asarray([load_single_image(in_filepath, mode=color_mode)]) # 入力画像を読み込む
-        show_image(img[0], mode=color_mode) # 入力画像を表示
+        show_image(img[0], title='input image', mode=color_mode) # 入力画像を表示
 
         # 圧縮
         x = torch.tensor(img, device=dev)
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         del y
 
         # 結果を保存
-        show_image(x_cpu[0], mode=color_mode) # 復元画像を表示
+        show_image(x_cpu[0], title='reconstructed image', mode=color_mode) # 復元画像を表示
         x_cpu = np.asarray(x_cpu[0].transpose(1, 2, 0) * 255, dtype=np.uint8)
         cv2.imwrite(out_filepath, x_cpu)
         del x_cpu

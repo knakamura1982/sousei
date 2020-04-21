@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     # 処理の実行
     img = np.asarray([load_single_image(in_filepath, mode=0)]) # mode=0: 入力ファイルをグレースケール画像として読み込む
-    show_image(img[0], mode=0) # 入力画像を表示
+    show_image(img[0], title='input image', mode=0) # 入力画像を表示
     x = torch.tensor(img, device=dev)
     y = model(x)
     y_cpu = y.to('cpu').detach().numpy().copy()
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     del x
 
     # 結果を保存
-    show_image(y_cpu[0], mode=1) # カラー化結果を表示
+    show_image(y_cpu[0], title='output image', mode=1) # カラー化結果を表示
     y_cpu = np.asarray(y_cpu[0].transpose(1, 2, 0) * 255, dtype=np.uint8)
     cv2.imwrite(out_filepath, y_cpu)
     del y_cpu

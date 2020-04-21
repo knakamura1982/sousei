@@ -32,14 +32,16 @@ def load_npy(filename, print_status=True):
 
 # 単一の画像を表示
 #   - data: 表示対象データ
+#   - title: グラフタイトル
 #   - mode: 表示モード（0: グレースケール画像モード，それ以外: カラー画像モード）
-def show_image(data, mode=1):
+def show_image(data, title='no title', mode=1):
     if mode == 0:
         img = np.asarray(data[0] * 255, dtype=np.uint8)
     else:
         img = np.asarray(data.transpose(1, 2, 0) * 255, dtype=np.uint8)
         img = img[:, :, [2, 1, 0]]
     plt.axis('off')
+    plt.title(title)
     plt.imshow(img, cmap=cm.gray, interpolation='nearest')
     plt.pause(2)
     plt.close()
