@@ -213,9 +213,9 @@
 ・内容： 実行用のソースファイルではない．
          compress_train.py ～ upsampling_exec.py で使用する AE のネットワーク構造が定義されている．
          それぞれ，次のクラスを編集することによりネットワーク構造を変更できる．
-         * compress_train.py, compress_exec.py: myAutoEncoder クラス
-         * colorize_train.py, colorize_exec.py: myColorizationAE クラス
-         * upsampling_train.py, upsampling_exec.py: myUpSamplingAE クラス
+          * compress_train.py, compress_exec.py: myAutoEncoder クラス
+          * colorize_train.py, colorize_exec.py: myColorizationAE クラス
+          * upsampling_train.py, upsampling_exec.py: myUpSamplingAE クラス
 
 
 [unit_layers.py]
