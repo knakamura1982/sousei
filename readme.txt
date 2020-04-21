@@ -1,21 +1,36 @@
 [sample.py]
 
+・内容： 2次元データを2クラスに分類する認識器を学習し，その過程を可視化する．
+
 ・実行コマンド例
   python sample.py -g=0 -e=50 -b=100 -v=5
 
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run sample.py -g=0 -e=50 -b=100 -v=5
+
 ・オプション
-  -g: GPU ID．指定しなかった場合 -1 となり，CPUモードで動作する
+  -g: GPU ID．指定しなかった場合 -1 となり，CPUモードで動作する．
   -e: 総エポック数（学習データを各1回ずつ用いてパラメータを更新する過程を1エポックとして，それを何回繰り返すか）．
       指定しなかった場合，デフォルト値として 50 が設定される．
   -b: ミニバッチあたりの学習データ数．指定しなかった場合，デフォルト値として 100 が設定される．
   -v: 何エポックに1回の割合で識別境界を可視化するか．
       指定しなかった場合，デフォルト値として 5 が設定される．
 
+・備考： ソースコード中の USING_DMY が False なら性別・身長・体重データが，True なら人工的に作成したデータが対象となる．
+         同じく，USING_MLP が False なら単一層のパーセプトロンが，True なら多層パーセプトロンが学習される．
+
 
 [mnist_train.py]
 
+・内容： MNISTデータセットを対象に画像認識器を学習する．
+         ネットワーク構造は cnn.py の myCNN クラスで定義されており，
+         これをソースコード中で「from cnn import myCNN」とすることにより読み込んでいる．
+
 ・実行コマンド例
   python mnist_train.py -g=0 -e=10 -b=100 -m=mnist_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run mnist_train.py -g=0 -e=10 -b=100 -m=mnist_model.pth
 
 ・オプション
   -g: sample.py と同じ．
@@ -29,9 +44,17 @@
 
 [mnist_predict.py]
 
+・内容： mnist_train.py で学習した認識器を用いて実際に認識処理を行う．
+         ネットワーク構造は cnn.py の myCNN クラスで定義されており，
+         これをソースコード中で「from cnn import myCNN」とすることにより読み込んでいる．
+
 ・実行コマンド例
   python mnist_predict.py -g=0 -i=dataset/MNIST/test_data/00000.png -m=mnist_model.pth
   python mnist_predict.py -g=0 -b=100 -m=mnist_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run mnist_predict.py -g=0 -i=dataset/MNIST/test_data/00000.png -m=mnist_model.pth
+  %run mnist_predict.py -g=0 -b=100 -m=mnist_model.pth
 
 ・オプション
   -g: sample.py と同じ．
@@ -44,8 +67,15 @@
 
 [compress_train.py]
 
+・内容： MNISTデータセットを対象にオートエンコーダ（AE）を学習する．
+         ネットワーク構造は autoencoders.py の myAutoEncoder クラスで定義されており，
+         これをソースコード中で「from autoencoders import myAutoEncoder」とすることにより読み込んでいる．
+
 ・実行コマンド例
   python compress_train.py -g=0 -e=10 -b=100 -f=32 -m=compress_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run compress_train.py -g=0 -e=10 -b=100 -f=32 -m=compress_model.pth
 
 ・オプション
   -g: sample.py と同じ．
@@ -60,12 +90,20 @@
 
 [compress_exec.py]
 
+・内容： compress_train.py で学習した AE を用いて画像圧縮／復元処理を行う．
+         ネットワーク構造は autoencoders.py の myAutoEncoder クラスで定義されており，
+         これをソースコード中で「from autoencoders import myAutoEncoder」とすることにより読み込んでいる．
+
 ・実行コマンド例
-  python compress_exec.py -c -g=0 -f=32 -i=dataset/MNIST/test_data/00000.png -o=compress_result.csv -m=comporess_model.pth
+  python compress_exec.py -c -g=0 -f=32 -i=dataset/MNIST/test_data/00000.png -o=compress_result.csv -m=compress_model.pth
   python compress_exec.py -d -g=0 -f=32 -i=compress_result.csv -o=decompress_result.png -m=compress_model.pth
 
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run compress_exec.py -c -g=0 -f=32 -i=dataset/MNIST/test_data/00000.png -o=compress_result.csv -m=compress_model.pth
+  %run compress_exec.py -d -g=0 -f=32 -i=compress_result.csv -o=decompress_result.png -m=compress_model.pth
+
 ・オプション
-  -c: 指定すると圧縮処理が実行される
+  -c: 指定すると圧縮処理が実行される．
   -d: 指定すると復元処理が実行される．
       -cオプションと同時に指定された場合は-dオプションが優先され，復元処理が実行される．
       -cと-dの何れもが指定されなかった場合は圧縮処理が実行される．
@@ -81,8 +119,15 @@
 
 [colorize_train.py]
 
+・内容： VGGFace2データセットを対象にカラー化処理用の AE を学習する．
+         ネットワーク構造は autoencoders.py の myColorizationAE クラスで定義されており，
+         これをソースコード中で「from autoencoders import myColorizationAE」とすることにより読み込んでいる．
+
 ・実行コマンド例
   python colorize_train.py -g=0 -e=10 -b=100 -m=colorize_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run colorize_train.py -g=0 -e=10 -b=100 -m=colorize_model.pth
 
 ・オプション
   -g: sample.py と同じ．
@@ -95,8 +140,15 @@
 
 [colorize_exec.py]
 
+・内容： colorize_train.py で学習した AE を用いて実際にカラー化処理を行う．
+         ネットワーク構造は autoencoders.py の myColorizationAE クラスで定義されており，
+         これをソースコード中で「from autoencoders import myColorizationAE」とすることにより読み込んでいる．
+
 ・実行コマンド例
-  python colorize_exec.py -g=0 -i=dataset/VGGFace2/test_data/00000.png -o=colorize_result.png -m=colorize_model.pth 
+  python colorize_exec.py -g=0 -i=dataset/VGGFace2/test_data/00000.png -o=colorize_result.png -m=colorize_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run colorize_exec.py -g=0 -i=dataset/VGGFace2/test_data/00000.png -o=colorize_result.png -m=colorize_model.pth
 
 ・オプション
   -g: sample.py と同じ．
@@ -109,8 +161,15 @@
 
 [upsampling_train.py]
 
+・内容： VGGFace2データセットを対象にアップサンプリング用の AE を学習する．
+         ネットワーク構造は autoencoders.py の myUpSamplingAE クラスで定義されており，
+         これをソースコード中で「from autoencoders import myUpSamplingAE」とすることにより読み込んでいる．
+
 ・実行コマンド例
   python upsampling_train.py -g=0 -e=10 -b=100 -m=upsampling_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run upsampling_train.py -g=0 -e=10 -b=100 -m=upsampling_model.pth
 
 ・オプション
   -g: sample.py と同じ．
@@ -123,8 +182,15 @@
 
 [upsampling_exec.py]
 
+・内容： upsampling_train.py で学習した AE を用いて実際にアップサンプリングを行う．
+         ネットワーク構造は autoencoders.py の myUpSamplingAE クラスで定義されており，
+         これをソースコード中で「from autoencoders import myUpSamplingAE」とすることにより読み込んでいる．
+
 ・実行コマンド例
   python upsampling_exec.py -g=0 -i=dataset/VGGFace2/test_data/00000.png -o=upsampling_result.png -m=upsampling_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run upsampling_exec.py -g=0 -i=dataset/VGGFace2/test_data/00000.png -o=upsampling_result.png -m=upsampling_model.pth
 
 ・オプション
   -g: sample.py と同じ．
@@ -137,11 +203,25 @@
 
 [cnn.py]
 
-・備考： mnist_train.py および mnist_predict.py で使用するDNNのネットワーク構造が定義されている．
+・内容： 実行用のソースファイルではない．
+         mnist_train.py および mnist_predict.py で使用するDNNのネットワーク構造が定義されている．
+         myCNN クラスを編集することによりネットワーク構造を変更できる．
 
 
 [autoencoders.py]
 
-・備考： compress_train.py 〜 upsampling_exec.py で使用するオートエンコーダのネットワーク構造が定義されている．
+・内容： 実行用のソースファイルではない．
+         compress_train.py ～ upsampling_exec.py で使用する AE のネットワーク構造が定義されている．
+         それぞれ，次のクラスを編集することによりネットワーク構造を変更できる．
+         * compress_train.py, compress_exec.py: myAutoEncoder クラス
+         * colorize_train.py, colorize_exec.py: myColorizationAE クラス
+         * upsampling_train.py, upsampling_exec.py: myUpSamplingAE クラス
 
+
+[unit_layers.py]
+
+・内容： 実行用のソースファイルではない．
+         畳込み層（Conv）やプーリング層（Pool），全結合層（FC）など，
+         cnn.py および autoencoders.py で使用しているクラスの実体が定義されている．
+         これらの内容と使い方については unit_layers.py 内に記載のコメントを参照のこと．
 
