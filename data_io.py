@@ -107,17 +107,43 @@ def read_image_list(filename, data_dir='./', with_header=True, dic=None):
     return lab, img, dic, name
 
 
+# 画像 img にごま塩ノイズを追加する
+#   - img: 画像（numpy ndarray）
+#   - mode: 読み込みモード（0: グレースケール画像モード，それ以外: カラー画像モード）
+#   - num: ごま塩ノイズとして入れる点の個数
+def add_noise(img, mode, num):
+    w_num = num // 2
+    b_num = num - w_num
+    pts_x = np.random.randint(0, img.shape[1] - 1, w_num)
+    pts_y = np.random.randint(0, img.shape[0] - 1, w_num)
+    if mode == 0:
+        img[(pts_y, pts_x)] = 255
+    else:
+        img[(pts_y, pts_x)] = (255, 255, 255)
+    pts_x = np.random.randint(0, img.shape[1] - 1, b_num)
+    pts_y = np.random.randint(0, img.shape[0] - 1, b_num)
+    if mode == 0:
+        img[(pts_y, pts_x)] = 0
+    else:
+        img[(pts_y, pts_x)] = (0, 0, 0)
+    return img
+
+
 # 単一の画像を読み込む
 #   - filename: 画像ファイルのファイルパス
 #   - size: 画像サイズを強制的に size = (width, height) に変更する（size == None のときは無視される）
 #   - mode: 読み込みモード（0: グレースケール画像モード，それ以外: カラー画像モード）
-def load_single_image(filename, size=None, mode=1):
+#   - with_noise: True なら強制的にごま塩ノイズを追加して読み込む
+#   - n_noise_points: ごま塩ノイズとして追加する点の個数（with_noise == False のときは無視される）
+def load_single_image(filename, size=None, mode=1, with_noise=False, n_noise_points=100):
 
     if mode == 0:
         # グレースケール画像モード
         img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE) # グレースケール画像として読み込む
         if not size is None:
             img = cv2.resize(img, dsize=size, interpolation=cv2.INTER_NEAREST)
+        if with_noise:
+            img = add_noise(img, mode, n_noise_points)
         img = img.reshape((1, img.shape[0], img.shape[1])) # チャンネル数 1 の三次元テンソルとなるように変形
         img = np.asarray(img, dtype=np.float32) / 255 # データ形式を 32bit float に変更し，画素値が [0,1] の範囲に収まるように正規化
     else:
@@ -125,6 +151,8 @@ def load_single_image(filename, size=None, mode=1):
         img = cv2.imread(filename, cv2.IMREAD_COLOR) # カラー画像として読み込む
         if not size is None:
             img = cv2.resize(img, dsize=size, interpolation=cv2.INTER_NEAREST)
+        if with_noise:
+            img = add_noise(img, mode, n_noise_points)
         img = img.transpose(2, 0, 1) # (チャンネル数，縦幅，横幅) の順となるように変形
         img = np.asarray(img, dtype=np.float32) / 255 # データ形式を 32bit float に変更し，画素値が [0,1] の範囲に収まるように正規化
 
@@ -136,19 +164,21 @@ def load_single_image(filename, size=None, mode=1):
 #   - ids: リスト中の何番目の画像を読み込むかを指定する整数配列
 #   - size: 画像サイズを強制的に size = (width, height) に変更する（size == None のときは無視される）
 #   - mode: 読み込みモード（0: グレースケール画像モード，それ以外: カラー画像モード）
-def load_images(image_list, ids=None, size=None, mode=1):
+#   - with_noise: True なら強制的にごま塩ノイズを追加して読み込む
+#   - n_noise_points: ごま塩ノイズとして追加する点の個数（with_noise == False のときは無視される）
+def load_images(image_list, ids=None, size=None, mode=1, with_noise=False, n_noise_points=100):
    
     # 画像をロード
     n = 0
     images = [] # 読み込んだ画像の集合
     if ids is None:
         for i in range(0, len(image_list)):
-            img = load_single_image(image_list[i], size, mode) # i番目の画像を読み込む
+            img = load_single_image(image_list[i], size, mode, with_noise, n_noise_points) # i番目の画像を読み込む
             images.append(img) # 画像を配列に追加
             n += 1 # 読み込んだ画像の総数をカウントしておく
     else:
         for i in range(0, len(ids)):
-            img = load_single_image(image_list[ids[i]], size, mode) # ids[i]番目の画像を読み込む
+            img = load_single_image(image_list[ids[i]], size, mode, with_noise, n_noise_points) # ids[i]番目の画像を読み込む
             images.append(img) # 画像を配列に追加
             n += 1 # 読み込んだ画像の総数をカウントしておく
 
