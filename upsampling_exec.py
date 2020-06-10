@@ -61,7 +61,7 @@ if __name__ == '__main__':
     model.eval()
 
     # 処理の実行
-    img = np.asarray([load_single_image(in_filepath, size=in_size, mode=color_mode)]) # 入力画像をにリサイズして読み込む
+    img = np.asarray([load_single_image(in_filepath, size=in_size, mode=color_mode)]) # 入力画像を半分のサイズにリサイズして読み込む
     show_image(img[0], title='input image', mode=color_mode) # 入力画像を表示
     x = torch.tensor(img, device=dev)
     y = model(x)

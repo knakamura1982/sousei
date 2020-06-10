@@ -108,14 +108,14 @@ if __name__ == '__main__':
         # 損失関数の現在値を表示
         print('  train loss = {0:.6f}'.format(sum_loss / n_input), file=sys.stderr)
 
-        # 評価用データに対するカラー化結果を保存
+        # 評価用データに対するノイズ除去結果を保存
         model.eval()
         x = torch.tensor(g_noise, device=dev)
         t = torch.tensor(g_clear, device=dev)
         y = model(x)
         y_cpu = y.to('cpu').detach().numpy().copy()
         if autosave == 'on':
-            save_progress(MODEL_DIR + 'denoise_ep{0}.png'.format(e + 1), y_cpu, n_data_max=25, n_data_per_row=5, mode=color_mode) # カラー化結果を保存
+            save_progress(MODEL_DIR + 'denoise_ep{0}.png'.format(e + 1), y_cpu, n_data_max=25, n_data_per_row=5, mode=color_mode) # ノイズ除去結果を保存
         print('  test loss = {0:.6f}'.format(float(loss_func(y, t))), file=sys.stderr)
         del y_cpu
         del y

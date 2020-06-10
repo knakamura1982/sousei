@@ -244,6 +244,8 @@
          mnist_train.py および mnist_predict.py で使用するDNNのネットワーク構造が定義されている．
          myCNN クラスを編集することによりネットワーク構造を変更できる．
 
+・備考： 改善の余地を大きくするため，本プログラム中のネットワークは敢えて「弱く」作成している．
+
 
 [autoencoders.py]
 
@@ -254,6 +256,8 @@
           * colorize_train.py, colorize_exec.py: myColorizationAE クラス
           * upsampling_train.py, upsampling_exec.py: myUpSamplingAE クラス
 
+・備考： 改善の余地を大きくするため，本プログラム中のネットワークは敢えて「弱く」作成している．
+
 
 [unit_layers.py]
 
@@ -261,4 +265,5 @@
          畳込み層（Conv）やプーリング層（Pool），全結合層（FC）など，
          cnn.py および autoencoders.py で使用しているクラスの実体が定義されている．
          これらの内容と使い方については unit_layers.py 内に記載のコメントを参照のこと．
+
 
