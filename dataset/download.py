@@ -49,6 +49,16 @@ if __name__ == '__main__':
         filename = 'Place365.tar.gz'
     elif target == 'VGGFace2':
         filename = 'VGGFace2.tar.gz'
+    elif target == 'ETL5C':
+        filename = 'ETL5C.tar.gz'
+    elif target == 'ETL4C':
+        filename = 'ETL4C.tar.gz'
+    elif target == 'LEGO':
+        filename = 'LEGO.tar.gz'
+    elif target == 'UTKFace':
+        filename = 'UTKFace.tar.gz'
+    elif target == 'JAFFE':
+        filename = 'JAFFE.tar.gz'
     else:
         print('error: {0} is an invalid dataset name.'.format(target), file=sys.stderr)
         exit()
