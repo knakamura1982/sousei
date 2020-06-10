@@ -47,7 +47,7 @@ if __name__ == '__main__':
     print('model file: {0}'.format(model_filepath), file=sys.stderr)
     print('', file=sys.stderr)
 
-    # 画像の縦幅・横幅・チャンネル数の設定
+    # 画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，ここを書き換える）
     width = 128 # VGGFace2顔画像の場合，横幅は 128 pixels
     height = 128 # VGGFace2顔画像の場合，縦幅も 128 pixels
     channels = 3 # VGGFace2顔画像はカラー画像なので，チャンネル数は 3

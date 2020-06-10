@@ -54,7 +54,7 @@ if __name__ == '__main__':
     print('model file: {0}'.format(model_filepath), file=sys.stderr)
     print('', file=sys.stderr)
 
-    # 画像の縦幅・横幅・チャンネル数の設定
+    # 画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，ここを書き換える）
     width = 28 # MNIST文字画像の場合，横幅は 28 pixels
     height = 28 # MNIST文字画像の場合，縦幅も 28 pixels
     channels = 1 # MNIST文字画像はグレースケール画像なので，チャンネル数は 1

@@ -10,11 +10,12 @@ from utils import show_image
 from data_io import read_image_list, load_single_image, load_images
 
 
-# データセットの指定
+# データセットの指定（別データセットを使う場合，ここを書き換える）
 DATA_DIR = './dataset/MNIST/' # データフォルダのパス
 IMAGE_LIST_EV = DATA_DIR + 'test_list.csv' # 評価用データ
 
 # 学習済みモデルが保存されているフォルダのパス
+# （別データセットを使う場合，mnist_train.py の設定に合わせる）
 MODEL_DIR = './mnist_models/'
 
 
@@ -50,7 +51,7 @@ if __name__ == '__main__':
     print('model file: {0}'.format(model_filepath), file=sys.stderr)
     print('', file=sys.stderr)
 
-    # 画像の縦幅・横幅・チャンネル数の設定
+    # 画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，ここを書き換える）
     width = 28 # MNIST文字画像の場合，横幅は 28 pixels
     height = 28 # MNIST文字画像の場合，縦幅も 28 pixels
     channels = 1 # MNIST文字画像はグレースケール画像なので，チャンネル数は 1
@@ -78,7 +79,7 @@ if __name__ == '__main__':
         n_samples_ev = len(imgfiles_ev) # 評価用データの総数
         n_failed = 0
         for i in range(0, n_samples_ev, batchsize):
-            x = torch.tensor(load_images(imgfiles_ev, ids=np.arange(i, i + batchsize), mode=color_mode), device=dev)
+            x = torch.tensor(load_images(imgfiles_ev, ids=np.arange(i, min(i + batchsize, n_samples_ev)), mode=color_mode), device=dev)
             t = labels_ev[i : i + batchsize]
             y = model.classify(x)
             y_cpu = y.to('cpu').detach().numpy().copy()

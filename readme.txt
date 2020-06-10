@@ -38,8 +38,7 @@
   -b: sample.py と同じ．
   -m: ここで指定したパスのファイルに学習後のモデルが上書き保存される（存在しない場合は自動作成される）．
       指定しなかった場合，デフォルト値として mnist_model.pth が設定される．
-
-・備考： 各エポック終了後のモデルが mnist_models/ 以下に自動保存される．
+  -s: 指定すると，各エポック終了後のモデルが mnist_models/ 以下に自動保存されるようになる．
 
 
 [mnist_predict.py]
@@ -84,8 +83,7 @@
   -f: 画像圧縮後のベクトルの次元数（圧縮表現に対応する中間層のユニット数）．
       指定しなかった場合，デフォルト値として 32 が設定される．
   -m: mnist_train.py と同じ（ただしデフォルト値は compress_model.pth となっている）．
-
-・備考： 各エポック終了後のモデルおよび圧縮・復元結果の例が compress_models/ 以下に自動保存される．
+  -s: 指定すると，各エポック終了後のモデルおよび圧縮・復元結果の例が compress_models/ 以下に自動保存されるようになる．
 
 
 [compress_exec.py]
@@ -134,8 +132,7 @@
   -e: sample.py と同じ（ただしデフォルト値は 10 となっている）．
   -b: sample.py と同じ．
   -m: mnist_train.py と同じ（ただしデフォルト値は colorize_model.pth となっている）．
-
-・備考： 各エポック終了後のモデルおよびカラー化結果の例が colorize_models/ 以下に自動保存される．
+  -s: 指定すると，各エポック終了後のモデルおよびカラー化結果の例が colorize_models/ 以下に自動保存されるようになる．
 
 
 [colorize_exec.py]
@@ -176,8 +173,7 @@
   -e: sample.py と同じ（ただしデフォルト値は 10 となっている）．
   -b: sample.py と同じ．
   -m: mnist_train.py と同じ（ただしデフォルト値は upsampling_model.pth となっている）．
-
-・備考： 各エポック終了後のモデルおよびアップサンプリング結果の例が upsampling_models/ 以下に自動保存される．
+  -s: 指定すると，各エポック終了後のモデルおよびアップサンプリング結果の例が upsampling_models/ 以下に自動保存されるようになる．
 
 
 [upsampling_exec.py]

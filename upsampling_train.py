@@ -11,7 +11,7 @@ from data_io import read_image_list, load_single_image, load_images
 from utils import save_progress
 
 
-# データセットの指定
+# データセットの指定（別データセットを使う場合，ここを書き換える）
 DATA_DIR = './dataset/VGGFace2/' # データフォルダのパス
 IMAGE_LIST = DATA_DIR + 'train_list.csv' # 学習データ
 IMAGE_LIST_EV = DATA_DIR + 'test_list.csv' # 評価用データ
@@ -29,6 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', '-e', default=10, type=int, help='number of epochs to learn')
     parser.add_argument('--batchsize', '-b', default=100, type=int, help='learning minibatch size')
     parser.add_argument('--model', '-m', default='upsampling_model.pth', type=str, help='file path of trained model')
+    parser.add_argument('--autosave', '-s', help='automatically save the model in each epoch', action='store_true')
     args = parser.parse_args()
 
     # デバイスの設定
@@ -39,13 +40,15 @@ if __name__ == '__main__':
     epochs = max(1, args.epochs) # 総エポック数（繰り返し回数）
     batchsize = max(1, args.batchsize) # バッチサイズ
     model_filepath = args.model # 学習結果のモデルの保存先ファイル
+    autosave = 'on' if args.autosave else 'off' # 各エポックでモデルを自動保存するか否か
     print('device: {0}'.format(dev_str), file=sys.stderr)
     print('epochs: {0}'.format(epochs), file=sys.stderr)
     print('batchsize: {0}'.format(batchsize), file=sys.stderr)
     print('model file: {0}'.format(model_filepath), file=sys.stderr)
+    print('autosave mode: {0}'.format(autosave), file=sys.stderr)
     print('', file=sys.stderr)
 
-    # 画像の縦幅・横幅・チャンネル数の設定
+    # 画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，ここを書き換える）
     width = 128 # VGGFace2顔画像の場合，横幅は 128 pixels
     height = 128 # VGGFace2顔画像の場合，縦幅も 128 pixels
     channels = 3 # VGGFace2顔画像はカラー画像なので，チャンネル数は 3
@@ -74,8 +77,9 @@ if __name__ == '__main__':
     perm = np.random.permutation(n_samples_ev)
     g_input = load_images(imgfiles_ev, ids=perm[: batchsize], size=in_size, mode=color_mode) # 評価用データを半分のサイズにリサイズして読み込む
     g_origin = load_images(imgfiles_ev, ids=perm[: batchsize], mode=color_mode) # 評価用データを読み込む
-    save_progress(MODEL_DIR + 'input.png', g_input, n_data_max=25, n_data_per_row=5, mode=color_mode)
-    save_progress(MODEL_DIR + 'original.png', g_origin, n_data_max=25, n_data_per_row=5, mode=color_mode)
+    if autosave == 'on':
+        save_progress(MODEL_DIR + 'input.png', g_input, n_data_max=25, n_data_per_row=5, mode=color_mode)
+        save_progress(MODEL_DIR + 'original.png', g_origin, n_data_max=25, n_data_per_row=5, mode=color_mode)
     for e in range(epochs):
 
         # 現在のエポック番号を表示
@@ -108,7 +112,8 @@ if __name__ == '__main__':
         t = torch.tensor(g_origin, device=dev)
         y = model(x)
         y_cpu = y.to('cpu').detach().numpy().copy()
-        save_progress(MODEL_DIR + 'upsampling_ep{0}.png'.format(e + 1), y_cpu, n_data_max=25, n_data_per_row=5, mode=color_mode)
+        if autosave == 'on':
+            save_progress(MODEL_DIR + 'upsampling_ep{0}.png'.format(e + 1), y_cpu, n_data_max=25, n_data_per_row=5, mode=color_mode)
         print('  test loss = {0:.6f}'.format(float(loss_func(y, t))), file=sys.stderr)
         del y_cpu
         del y
@@ -116,8 +121,9 @@ if __name__ == '__main__':
         del x
 
         # 現在のモデルをファイルに自動保存
-        torch.save(model.to('cpu').state_dict(), MODEL_DIR + 'model_ep{0}.pth'.format(e + 1))
-        model = model.to(dev)
+        if autosave == 'on':
+            torch.save(model.to('cpu').state_dict(), MODEL_DIR + 'model_ep{0}.pth'.format(e + 1))
+            model = model.to(dev)
 
         print('', file=sys.stderr)
 

@@ -11,12 +11,13 @@ from cnn import myCNN
 from data_io import read_image_list, load_single_image, load_images
 
 
-# データセットの指定
+# データセットの指定（別データセットを使う場合，ここを書き換える）
 DATA_DIR = './dataset/MNIST/' # データフォルダのパス
 IMAGE_LIST = DATA_DIR + 'train_list.csv' # 学習データ
 IMAGE_LIST_EV = DATA_DIR + 'test_list.csv' # 評価用データ
 
 # モデルを保存するフォルダの指定
+# （別データセットを使う場合，書き換えなくても正常に動作するが，名前がまぎらわしくなるので書き換えを推奨する）
 MODEL_DIR = './mnist_models/'
 
 
@@ -29,6 +30,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', '-e', default=10, type=int, help='number of epochs to learn')
     parser.add_argument('--batchsize', '-b', default=100, type=int, help='learning minibatch size')
     parser.add_argument('--model', '-m', default='mnist_model.pth', type=str, help='file path of trained model')
+    parser.add_argument('--autosave', '-s', help='automatically save the model in each epoch', action='store_true')
     args = parser.parse_args()
 
     # デバイスの設定
@@ -39,13 +41,15 @@ if __name__ == '__main__':
     epochs = max(1, args.epochs) # 総エポック数（繰り返し回数）
     batchsize = max(1, args.batchsize) # バッチサイズ
     model_filepath = args.model # 学習結果のモデルの保存先ファイル
+    autosave = 'on' if args.autosave else 'off' # 各エポックでモデルを自動保存するか否か
     print('device: {0}'.format(dev_str), file=sys.stderr)
     print('epochs: {0}'.format(epochs), file=sys.stderr)
     print('batchsize: {0}'.format(batchsize), file=sys.stderr)
     print('model file: {0}'.format(model_filepath), file=sys.stderr)
+    print('autosave mode: {0}'.format(autosave), file=sys.stderr)
     print('', file=sys.stderr)
 
-    # 画像の縦幅・横幅・チャンネル数の設定
+    # 画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，ここを書き換える）
     width = 28 # MNIST文字画像の場合，横幅は 28 pixels
     height = 28 # MNIST文字画像の場合，縦幅も 28 pixels
     channels = 1 # MNIST文字画像はグレースケール画像なので，チャンネル数は 1
@@ -105,7 +109,7 @@ if __name__ == '__main__':
         model.eval()
         n_failed = 0
         for i in range(0, n_samples_ev, batchsize):
-            x = torch.tensor(load_images(imgfiles_ev, ids=np.arange(i, i + batchsize), mode=color_mode), device=dev) # 評価用データを読み込む
+            x = torch.tensor(load_images(imgfiles_ev, ids=np.arange(i, min(i + batchsize, n_samples_ev)), mode=color_mode), device=dev) # 評価用データを読み込む
             t = torch.tensor(labels_ev[i : i + batchsize], device=dev, dtype=torch.long)
             y = model.classify(x)
             y_cpu = y.to('cpu').detach().numpy().copy()
@@ -120,8 +124,9 @@ if __name__ == '__main__':
         print('  accuracy = {0:.2f}%'.format(100 * acc), file=sys.stderr)
 
         # 現在のモデルをファイルに自動保存
-        torch.save(model.to('cpu').state_dict(), MODEL_DIR + 'model_ep{0}.pth'.format(e + 1))
-        model = model.to(dev)
+        if autosave == 'on':
+            torch.save(model.to('cpu').state_dict(), MODEL_DIR + 'model_ep{0}.pth'.format(e + 1))
+            model = model.to(dev)
 
         print('', file=sys.stderr)
 

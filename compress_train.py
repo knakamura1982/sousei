@@ -11,7 +11,7 @@ from data_io import read_image_list, load_single_image, load_images
 from utils import save_progress
 
 
-# データセットの指定
+# データセットの指定（別データセットを使う場合，ここを書き換える）
 DATA_DIR = './dataset/MNIST/' # データフォルダのパス
 IMAGE_LIST = DATA_DIR + 'train_list.csv' # 学習データ
 IMAGE_LIST_EV = DATA_DIR + 'test_list.csv' # 評価用データ
@@ -30,6 +30,7 @@ if __name__ == '__main__':
     parser.add_argument('--batchsize', '-b', default=100, type=int, help='learning minibatch size')
     parser.add_argument('--feature_dimension', '-f', default=32, type=int, help='dimension of feature space')
     parser.add_argument('--model', '-m', default='compress_model.pth', type=str, help='file path of trained model')
+    parser.add_argument('--autosave', '-s', help='automatically save the model in each epoch', action='store_true')
     args = parser.parse_args()
 
     # デバイスの設定
@@ -41,14 +42,16 @@ if __name__ == '__main__':
     batchsize = max(1, args.batchsize) # バッチサイズ
     dimension = max(1, args.feature_dimension) # 圧縮後のベクトルの次元数
     model_filepath = args.model # 学習結果のモデルの保存先ファイル
+    autosave = 'on' if args.autosave else 'off' # 各エポックでモデルを自動保存するか否か
     print('device: {0}'.format(dev_str), file=sys.stderr)
     print('epochs: {0}'.format(epochs), file=sys.stderr)
     print('batchsize: {0}'.format(batchsize), file=sys.stderr)
     print('feature dimension: {0}'.format(dimension), file=sys.stderr)
     print('model file: {0}'.format(model_filepath), file=sys.stderr)
+    print('autosave mode: {0}'.format(autosave), file=sys.stderr)
     print('', file=sys.stderr)
 
-    # 画像の縦幅・横幅・チャンネル数の設定
+    # 画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，ここを書き換える）
     width = 28 # MNIST文字画像の場合，横幅は 28 pixels
     height = 28 # MNIST文字画像の場合，縦幅も 28 pixels
     channels = 1 # MNIST文字画像はグレースケール画像なので，チャンネル数は 1
@@ -75,7 +78,8 @@ if __name__ == '__main__':
     # 学習処理ループ
     perm = np.random.permutation(n_samples_ev)
     g = load_images(imgfiles_ev, ids=perm[: batchsize], mode=color_mode) # 評価用データを読み込む
-    save_progress(MODEL_DIR + 'original.png', g, mode=color_mode) # 比較用に評価用データを保存
+    if autosave == 'on':
+        save_progress(MODEL_DIR + 'original.png', g, mode=color_mode) # 比較用に評価用データを保存
     for e in range(epochs):
 
         # 現在のエポック番号を表示
@@ -105,15 +109,17 @@ if __name__ == '__main__':
         x = torch.tensor(g, device=dev)
         y = model(x)
         y_cpu = y.to('cpu').detach().numpy().copy()
-        save_progress(MODEL_DIR + 'reconstructed_ep{0}.png'.format(e + 1), y_cpu, mode=color_mode) # 復元結果を保存
+        if autosave == 'on':
+            save_progress(MODEL_DIR + 'reconstructed_ep{0}.png'.format(e + 1), y_cpu, mode=color_mode) # 復元結果を保存
         print('  test loss = {0:.6f}'.format(float(loss_func(y, x))), file=sys.stderr)
         del y_cpu
         del y
         del x
 
         # 現在のモデルをファイルに自動保存
-        torch.save(model.to('cpu').state_dict(), MODEL_DIR + 'model_ep{0}.pth'.format(e + 1))
-        model = model.to(dev)
+        if autosave == 'on':
+            torch.save(model.to('cpu').state_dict(), MODEL_DIR + 'model_ep{0}.pth'.format(e + 1))
+            model = model.to(dev)
 
         print('', file=sys.stderr)
 
