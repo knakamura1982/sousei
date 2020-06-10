@@ -197,6 +197,47 @@
   -m: mnist_predict.py と同じ．
 
 
+[denoise_train.py]
+
+・内容： CIFAR10データセットを対象にノイズ除去処理用の AE を学習する．
+         次元圧縮に用いたネットワーク（autoencoders.py の myAutoEncoder クラス）を流用しており，性能は非常に低い．
+         上述のクラスをソースコード中で「from autoencoders import myAutoEncoder」とすることにより読み込んでいる．
+
+・実行コマンド例
+  python denoise_train.py -g=0 -e=10 -b=100 -m=denoise_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run denoise_train.py -g=0 -e=10 -b=100 -m=denoise_model.pth
+
+・オプション
+  -g: sample.py と同じ．
+  -e: sample.py と同じ（ただしデフォルト値は 10 となっている）．
+  -b: sample.py と同じ．
+  -m: mnist_train.py と同じ（ただしデフォルト値は denoise_model.pth となっている）．
+  -s: 指定すると，各エポック終了後のモデルおよびノイズ除去結果の例が denoise_models/ 以下に自動保存されるようになる．
+
+
+[denoise_exec.py]
+
+・内容： denoise_train.py で学習した AE を用いて実際にノイズ除去処理を行う．
+         次元圧縮に用いたネットワーク（autoencoders.py の myAutoEncoder クラス）を流用しており，性能は非常に低い．
+         上述のクラスをソースコード中で「from autoencoders import myAutoEncoder」とすることにより読み込んでいる．
+
+・実行コマンド例
+  python denoise_exec.py -g=0 -i=dataset/CIFAR10/test_data/00000.png -o=denoise_result.png -m=denoise_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run denoise_exec.py -g=0 -i=dataset/CIFAR10/test_data/00000.png -o=denoise_result.png -m=denoise_model.pth
+
+・オプション
+  -g: sample.py と同じ．
+  -i: 入力画像のファイルパス．
+      必須項目であり，指定しなかった場合はエラー終了する．
+  -o: 出力画像（ノイズ除去結果）のファイルパス．
+      必須項目であり，指定しなかった場合はエラー終了する．
+  -m: mnist_predict.py と同じ．
+
+
 [cnn.py]
 
 ・内容： 実行用のソースファイルではない．
