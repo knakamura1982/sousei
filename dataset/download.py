@@ -59,6 +59,10 @@ if __name__ == '__main__':
         filename = 'UTKFace.tar.gz'
     elif target == 'JAFFE':
         filename = 'JAFFE.tar.gz'
+    elif target == 'Food101':
+        filename = 'Food101.tar.gz'
+    elif target == 'LFW_Sub':
+        filename = 'LFW_Sub.tar.gz'
     else:
         print('error: {0} is an invalid dataset name.'.format(target), file=sys.stderr)
         exit()
