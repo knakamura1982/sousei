@@ -9,6 +9,17 @@ import torch
 from autoencoders import myAutoEncoder
 from data_io import load_single_image
 from utils import show_image
+from func import predict_once
+
+
+### データセットに応じてこの部分を書き換える必要あり ###
+
+# 入力画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，下の三つを書き換える）
+WIDTH = 28 # MNIST文字画像の場合，横幅は 28 pixels
+HEIGHT = 28 # MNIST文字画像の場合，縦幅も 28 pixels
+CHANNELS = 1 # MNIST文字画像はグレースケール画像なので，チャンネル数は 1
+
+### ここまで ###
 
 
 # エントリポイント
@@ -22,7 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('--feature_dimension', '-f', default=32, type=int, help='dimension of feature space')
     parser.add_argument('--in_filepath', '-i', default='', type=str, help='input file path')
     parser.add_argument('--out_filepath', '-o', default='', type=str, help='output file path')
-    parser.add_argument('--model', '-m', default='', type=str, help='file path of trained model')
+    parser.add_argument('--model', '-m', default='compress_model.pth', type=str, help='file path of trained model')
     args = parser.parse_args()
 
     # コマンドライン引数のチェック
@@ -31,9 +42,6 @@ if __name__ == '__main__':
         exit()
     if args.out_filepath is None or args.out_filepath == '':
         print('error: no output file path is specified.', file=sys.stderr)
-        exit()
-    if args.model is None or args.model == '':
-        print('error: model file is not specified.', file=sys.stderr)
         exit()
 
     # デバイスの設定
@@ -54,39 +62,31 @@ if __name__ == '__main__':
     print('model file: {0}'.format(model_filepath), file=sys.stderr)
     print('', file=sys.stderr)
 
-    # 画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，ここを書き換える）
-    width = 28 # MNIST文字画像の場合，横幅は 28 pixels
-    height = 28 # MNIST文字画像の場合，縦幅も 28 pixels
-    channels = 1 # MNIST文字画像はグレースケール画像なので，チャンネル数は 1
-    color_mode = 0 if channels == 1 else 1
+    # 学習済みのオートエンコーダをロード
+    cnn = myAutoEncoder(WIDTH, HEIGHT, CHANNELS, dimension)
+    cnn.load_state_dict(torch.load(model_filepath))
 
-    # 圧縮／復元に用いるオートエンコーダをロード
-    model = myAutoEncoder(width, height, channels, dimension)
-    model.load_state_dict(torch.load(model_filepath))
-    model = model.to(dev)
-    model.eval()
+    # 画像のカラーモードを設定
+    color_mode = 0 if CHANNELS == 1 else 1
 
     # 処理の実行
     if mode == 'compression':
 
         ### 圧縮モード ###
 
-        # 画像を読み込む
-        img = np.asarray([load_single_image(in_filepath, mode=color_mode)]) # 入力画像を読み込む
-        show_image(img[0], title='input image', mode=color_mode) # 入力画像を表示
+        # 入力画像を読み込む
+        img = load_single_image(in_filepath, mode=color_mode)
 
-        # 圧縮
-        x = torch.tensor(img, device=dev)
-        y = model.encode(x)
-        y_cpu = y.to('cpu').detach().numpy().copy()
-        del y
-        del x
+        # 入力画像を表示
+        show_image(img, title='input image', mode=color_mode)
 
-        # 結果を保存
+        # 入力画像をモデルに入力して圧縮
+        y = predict_once(device=dev, model=cnn, in_data=img, module='encode')
+
+        # 圧縮結果をファイルに保存
         with open(out_filepath, 'w') as f:
-            for i in range(y_cpu.shape[1]):
-                print(y_cpu[0, i], file=f)
-        del y_cpu
+            for i in range(len(y)):
+                print(y[i], file=f)
 
     else:
 
@@ -98,19 +98,15 @@ if __name__ == '__main__':
             vec = []
             for row in reader:
                 vec.append(float(row[0]))
-            vec = np.asarray([vec], dtype=np.float32)
 
-        # 復元
-        y = torch.tensor(vec, device=dev)
-        x = model.decode(y)
-        x_cpu = x.to('cpu').detach().numpy().copy()
-        del x
-        del y
+        # 特徴ベクトルをモデルに入力して画像を復元
+        y = predict_once(device=dev, model=cnn, in_data=vec, module='decode')
 
-        # 結果を保存
-        show_image(x_cpu[0], title='reconstructed image', mode=color_mode) # 復元画像を表示
-        x_cpu = np.asarray(x_cpu[0].transpose(1, 2, 0) * 255, dtype=np.uint8)
-        cv2.imwrite(out_filepath, x_cpu)
-        del x_cpu
+        # 復元結果を表示
+        show_image(y, title='reconstructed image', mode=color_mode)
+
+        # 復元結果を画像ファイルに保存
+        y = np.asarray(y.transpose(1, 2, 0) * 255, dtype=np.uint8)
+        cv2.imwrite(out_filepath, y)
 
     print('', file=sys.stderr)

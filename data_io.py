@@ -42,16 +42,12 @@ def read_features(filename, with_header=True, dic=None):
             lab.append(dic[row[0]])
             feat.append(np.asarray(row[1:], dtype=np.float32))
 
-    # 読み込み結果を numpy.ndarray 形式に変換
-    lab = np.asarray(lab)
-    feat = np.asarray(feat)
-
     # CSVファイルを閉じる
     f.close()
 
     # 結果を返す
-    #   - lab: ラベル配列
-    #   - feat: 特徴量配列
+    #   - lab: ラベル配列（list）
+    #   - feat: 特徴量配列（list）
     #   - dic: クラスラベル名からクラス番号への対応を表す辞書
     #   - name: クラスラベル名配列（dic != Noneのときは空）
     return lab, feat, dic, name
@@ -97,15 +93,12 @@ def read_image_list(filename, data_dir='./', with_header=True, cid_lab=0, cid_da
             lab.append(dic[row[cid_lab]])
             img.append(os.path.join(data_dir, row[cid_dat]))
 
-    # 読み込み結果を numpy.ndarray 形式に変換
-    lab = np.asarray(lab)
-
     # CSVファイルを閉じる
     f.close()
 
     # 結果を返す
-    #   - lab: ラベル配列
-    #   - img: 画像ファイル名のリスト
+    #   - lab: ラベル配列（list）
+    #   - img: 画像ファイル名のリスト（list）
     #   - dic: クラスラベル名からクラス番号への対応を表す辞書
     #   - name: クラスラベル名配列（dic != Noneのときは空）
     return lab, img, dic, name
@@ -116,20 +109,12 @@ def read_image_list(filename, data_dir='./', with_header=True, cid_lab=0, cid_da
 #   - mode: 読み込みモード（0: グレースケール画像モード，それ以外: カラー画像モード）
 #   - num: ごま塩ノイズとして入れる点の個数
 def add_noise(img, mode, num):
-    w_num = num // 2
-    b_num = num - w_num
-    pts_x = np.random.randint(0, img.shape[1] - 1, w_num)
-    pts_y = np.random.randint(0, img.shape[0] - 1, w_num)
+    pts_x = np.random.randint(0, img.shape[1], num)
+    pts_y = np.random.randint(0, img.shape[0], num)
     if mode == 0:
-        img[(pts_y, pts_x)] = 255
+        img[(pts_y, pts_x)] = (127 * np.random.randint(0, 3, (num, 1))).astype(np.uint8)
     else:
-        img[(pts_y, pts_x)] = (255, 255, 255)
-    pts_x = np.random.randint(0, img.shape[1] - 1, b_num)
-    pts_y = np.random.randint(0, img.shape[0] - 1, b_num)
-    if mode == 0:
-        img[(pts_y, pts_x)] = 0
-    else:
-        img[(pts_y, pts_x)] = (0, 0, 0)
+        img[(pts_y, pts_x)] = (127 * np.random.randint(0, 3, (num, 3))).astype(np.uint8)
     return img
 
 
@@ -170,7 +155,7 @@ def load_single_image(filename, size=None, pad=False, mode=1, with_noise=False, 
         img = np.asarray(img, dtype=np.float32) / 255 # データ形式を 32bit float に変更し，画素値が [0,1] の範囲に収まるように正規化
     else:
         # カラー画像モード
-        img = cv2.imread(filename, cv2.IMREAD_COLOR) # カラー画像として読み込む
+        img = cv2.cvtColor(cv2.imread(filename, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB) # カラー画像として読み込む
         if not size is None:
             if pad:
                 dw = img.shape[1] - size[0]
@@ -252,7 +237,5 @@ def load_labels(label_list, ids=None, n_classes=0):
             lab[label_list[ids[i]]] = 1.0
             labels.append(lab)
             n += 1
-
-    labels = np.asarray(labels, dtype=np.float32)
 
     return labels

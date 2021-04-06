@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 import torch
 import torch.nn as nn
-from cnn import myCNN
+from cnn import myCNN2
 from utils import show_image
 from func import predict, predict_once
 from data_io import read_image_list, load_single_image
@@ -15,19 +15,19 @@ from data_io import read_image_list, load_single_image
 ### データセットに応じてこの部分を書き換える必要あり ###
 
 # 使用するデータセット
-DATA_DIR = './dataset/MNIST/' # データフォルダのパス（別データセットを使う場合，ここを書き換える）
+DATA_DIR = './dataset/CIFAR10/' # データフォルダのパス（別データセットを使う場合，ここを書き換える）
 IMAGE_LIST_EV = DATA_DIR + 'test_list.csv' # 評価用データ
 
 # 画像の縦幅・横幅・チャンネル数の設定（別データセットを使う場合，下の 3 つを書き換える）
-WIDTH = 28 # MNIST文字画像の場合，横幅は 28 pixels
-HEIGHT = 28 # MNIST文字画像の場合，縦幅も 28 pixels
-CHANNELS = 1 # MNIST文字画像はグレースケール画像なので，チャンネル数は 1
+WIDTH = 32 # CIFAR10物体画像の場合，横幅は 32 pixels
+HEIGHT = 32 # CIFAR10物体画像の場合，縦幅も 32 pixels
+CHANNELS = 3 # CIFAR10物体画像はカラー画像なので，チャンネル数は 3
 
 ### ここまで ###
 
 
 # 一時ファイルが保存されているフォルダのパス
-MODEL_DIR = './mnist_models/'
+MODEL_DIR = './cifar10_models/'
 
 
 # エントリポイント
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', '-g', default=-1, type=int, help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--batchsize', '-b', default=100, type=int, help='learning minibatch size')
     parser.add_argument('--in_filepath', '-i', default='', type=str, help='input image file path')
-    parser.add_argument('--model', '-m', default='mnist_model.pth', type=str, help='file path of trained model')
+    parser.add_argument('--model', '-m', default='cifar10_model.pth', type=str, help='file path of trained model')
     args = parser.parse_args()
 
     # デバイスの設定
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     n_classes = len(labelnames)
 
     # 学習済みの画像認識器をロード
-    cnn = myCNN(WIDTH, HEIGHT, CHANNELS, n_classes)
+    cnn = myCNN2(WIDTH, HEIGHT, n_classes)
     cnn.load_state_dict(torch.load(model_filepath))
 
     # 入力画像に対し認識処理を実行
