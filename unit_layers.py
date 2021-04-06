@@ -192,30 +192,28 @@ class FC(nn.Module):
 
 
 # 平坦化を行う層
-#   - return_size: 入力マップのサイズを返却するか否か（Trueなら返す，Falseなら返さない）
 class Flatten(nn.Module):
 
-    def __init__(self, return_size=False):
+    def __init__(self):
         super(Flatten, self).__init__()
-        self.return_size = return_size
 
     def __call__(self, x):
-        size = x.size()
-        h = x.view(size[0], -1)
-        if self.return_size:
-            return h, size
-        else:
-            return h
+        h = x.view(x.size()[0], -1)
+        return h
 
 
 # 特徴マップの再配置（平坦化の逆）を行う層
 class Reshape(nn.Module):
 
-    def __init__(self):
+    def __init__(self, size=None):
         super(Reshape, self).__init__()
+        self.size = size
 
-    # size: 再配置後の特徴マップのサイズ（Flattenの戻り値が使用されることを想定）
-    def __call__(self, x, size):
+    def __call__(self, x):
+        size = []
+        size.append(x.size()[0])
+        for i in range(len(self.size)):
+            size.append(self.size[i])
         h = x.reshape(size)
         return h
 

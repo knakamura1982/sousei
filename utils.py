@@ -39,7 +39,6 @@ def show_image(data, title='no title', mode=1):
         img = np.asarray(data[0] * 255, dtype=np.uint8)
     else:
         img = np.asarray(data.transpose(1, 2, 0) * 255, dtype=np.uint8)
-        img = img[:, :, [2, 1, 0]]
     plt.axis('off')
     plt.title(title)
     plt.imshow(img, cmap=cm.gray, interpolation='nearest')
@@ -72,7 +71,6 @@ def save_progress(filename, data, n_data_max=100, n_data_per_row=10, mode=1):
             img = np.asarray(data[i][0] * 255, dtype=np.uint8)
         else:
             img = np.asarray(data[i].transpose(1, 2, 0) * 255, dtype=np.uint8)
-            img = img[:, :, [2, 1, 0]]
         plt.imshow(img, cmap=cm.gray, interpolation='nearest')
 
     # 保存

@@ -6,16 +6,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from binary_classifiers import BCSLP, BCMLP
 from visualizers import BCVisualizer
 from data_io import read_features
+from cnn import myMLP
 
 
 # データフォルダ
 DATA_DIR = './dataset/Example/'
-
-# 多層パーセプトロンを使用するか否か（使用しない場合は一層パーセプトロンを使用）
-USING_MLP = False
 
 # ダミーデータを対象とするか否か
 USING_DMY = False
@@ -55,16 +52,17 @@ if __name__ == '__main__':
         # ダミーデータを対象とする場合
         labels, features, labeldict, labelnames = read_features(DATA_DIR + 'dmy_train.csv') # 学習データ読み込み
         labels_ev, features_ev, labeldict, dmy = read_features(DATA_DIR + 'dmy_test.csv', dic=labeldict) # 評価用データ読み込み
+    labels = np.asarray(labels, dtype=np.int32)
+    labels_ev = np.asarray(labels_ev, dtype=np.int32)
+    features = np.asarray(features, dtype=np.float32)
+    features_ev = np.asarray(features_ev, dtype=np.float32)
     n_samples = features.shape[0] # 学習データの総数
     n_samples_ev = features_ev.shape[0] # 評価用データの総数
     n_dims = features.shape[1] # データの次元数
     n_classes = len(labeldict) # クラス数
 
     # 二クラス識別器の作成
-    if USING_MLP == False:
-        model = BCSLP(n_dims) # 一層パーセプトロンによる識別器
-    else:
-        model = BCMLP(n_dims, n_units=(10, 10)) # 多層パーセプトロンによる識別器
+    model = myMLP(n_dims)
     model = model.to(dev)
 
     # 可視化の準備
@@ -84,9 +82,6 @@ if __name__ == '__main__':
     visualizer = BCVisualizer(hrange=hrange, vrange=vrange, hlabel=visualizer_hlabel, vlabel=visualizer_vlabel, clabels=labelnames)
 
     # 初期状態の可視化
-    if USING_MLP == False:
-        model.print_discriminant_func() # 一層パーセプトロンの場合，識別関数は一次式になるので，それを表示
-        print('', file=sys.stderr)
     if visualization_interval > 0:
         visualizer.show(model, device=dev, samples=data, title='Initial State') # グラフを表示
 
@@ -127,7 +122,7 @@ if __name__ == '__main__':
         for i in range(0, n_samples_ev, batchsize):
             x = torch.tensor(features_ev[i : i + batchsize], device=dev)
             t = torch.tensor(labels_ev[i : i + batchsize], device=dev, dtype=torch.long)
-            y = model.classify(x)
+            y = model(x)
             y = y.to('cpu').detach().numpy().copy()
             t = t.to('cpu').detach().numpy().copy()
             n_failed += np.count_nonzero(np.argmax(y, axis=1) - t)
@@ -139,8 +134,6 @@ if __name__ == '__main__':
 
         # 現状態の可視化
         if visualization_interval > 0 and (e + 1) % visualization_interval == 0:
-            if USING_MLP == False:
-                model.print_discriminant_func() # 一層パーセプトロンの場合，識別関数は一次式になるので，それを表示
             visualizer.show(model, device=dev, samples=data, title='Epoch {0}'.format(e + 1)) # グラフを表示
 
         print('', file=sys.stderr)

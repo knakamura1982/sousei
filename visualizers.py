@@ -63,7 +63,7 @@ class BCVisualizer():
 
         # 背景画像の作成
         model.eval()
-        result = model.classify(torch.tensor(self.data, device=device))
+        result = model(torch.tensor(self.data, device=device)) + 0.5
         score = result.to('cpu').detach().numpy().copy()
         score = score[:,1].reshape([self.size, self.size])
         c0color_light = 128 + np.asarray(c0color, dtype=np.uint8) // 2

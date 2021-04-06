@@ -17,7 +17,6 @@
       指定しなかった場合，デフォルト値として 5 が設定される．
 
 ・備考： ソースコード中の USING_DMY が False なら性別・身長・体重データが，True なら人工的に作成したデータが対象となる．
-         同じく，USING_MLP が False なら単一層のパーセプトロンが，True なら多層パーセプトロンが学習される．
 
 
 [mnist_train.py]
@@ -38,7 +37,6 @@
   -b: sample.py と同じ．
   -m: ここで指定したパスのファイルに学習後のモデルが上書き保存される（存在しない場合は自動作成される）．
       指定しなかった場合，デフォルト値として mnist_model.pth が設定される．
-  -s: 指定すると，各エポック終了後のモデルが mnist_models/ 以下に自動保存されるようになる．
 
 
 [mnist_predict.py]
@@ -61,7 +59,48 @@
       指定しなかった場合，ソースコード中に記載された評価用データセットに対する認識精度を求めるモードになる．
   -b: -iオプションが指定されなかった場合のみ有効．機能は sample.py と同じ．
   -m: モデルファイルのパス．ここで指定されたモデルファイルをロードして処理を実行する．
-      必須項目であり，指定しなかった場合はエラー終了する．
+      指定しなかった場合，デフォルト値として mnist_model.pth が設定される．
+
+
+[cifar10_train.py]
+
+・内容： CIFAR10データセットを対象に画像認識器を学習する．
+         ネットワーク構造は cnn.py の myCNN2 クラスで定義されており，
+         これをソースコード中で「from cnn import myCNN2」とすることにより読み込んでいる．
+
+・実行コマンド例
+  python cifar10_train.py -g=0 -e=10 -b=100 -m=cifar10_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run cifar10_train.py -g=0 -e=10 -b=100 -m=cifar10_model.pth
+
+・オプション
+  -g: sample.py と同じ．
+  -e: sample.py と同じ（ただしデフォルト値は 10 となっている）．
+  -b: sample.py と同じ．
+  -m: mnist_train.py と同じ（ただしデフォルト値は cifar10_model.pth となっている）．
+
+
+[cifar10_predict.py]
+
+・内容： cifar10_train.py で学習した認識器を用いて実際に認識処理を行う．
+         ネットワーク構造は cnn.py の myCNN2 クラスで定義されており，
+         これをソースコード中で「from cnn import myCNN2」とすることにより読み込んでいる．
+
+・実行コマンド例
+  python cifar10_predict.py -g=0 -i=dataset/MNIST/test_data/00000.png -m=cifar10_model.pth
+  python cifar10_predict.py -g=0 -b=100 -m=cifar10_model.pth
+
+・実行コマンド例（Google Colaboratoryのセルで実行する場合）
+  %run mnist_predict.py -g=0 -i=dataset/MNIST/test_data/00000.png -m=mnist_model.pth
+  %run mnist_predict.py -g=0 -b=100 -m=mnist_model.pth
+
+・オプション
+  -g: sample.py と同じ．
+  -i: 入力画像のファイルパス．
+      指定しなかった場合，ソースコード中に記載された評価用データセットに対する認識精度を求めるモードになる．
+  -b: -iオプションが指定されなかった場合のみ有効．機能は sample.py と同じ．
+  -m: mnist_predict.py と同じ（ただしデフォルト値は cifar10_model.pth となっている）．
 
 
 [compress_train.py]
@@ -83,7 +122,6 @@
   -f: 画像圧縮後のベクトルの次元数（圧縮表現に対応する中間層のユニット数）．
       指定しなかった場合，デフォルト値として 32 が設定される．
   -m: mnist_train.py と同じ（ただしデフォルト値は compress_model.pth となっている）．
-  -s: 指定すると，各エポック終了後のモデルおよび圧縮・復元結果の例が compress_models/ 以下に自動保存されるようになる．
 
 
 [compress_exec.py]
@@ -112,7 +150,7 @@
       必須項目であり，指定しなかった場合はエラー終了する．
   -o: 出力ファイルパス（圧縮時は.csvファイル，復元時は画像ファイル）
       必須項目であり，指定しなかった場合はエラー終了する．
-  -m: mnist_predict.py と同じ．
+  -m: mnist_predict.py と同じ（ただしデフォルト値は compress_model.pth となっている）．
 
 
 [colorize_train.py]
@@ -132,7 +170,6 @@
   -e: sample.py と同じ（ただしデフォルト値は 10 となっている）．
   -b: sample.py と同じ．
   -m: mnist_train.py と同じ（ただしデフォルト値は colorize_model.pth となっている）．
-  -s: 指定すると，各エポック終了後のモデルおよびカラー化結果の例が colorize_models/ 以下に自動保存されるようになる．
 
 
 [colorize_exec.py]
@@ -153,7 +190,7 @@
       必須項目であり，指定しなかった場合はエラー終了する．
   -o: 出力画像（カラー化結果）のファイルパス．
       必須項目であり，指定しなかった場合はエラー終了する．
-  -m: mnist_predict.py と同じ．
+  -m: mnist_predict.py と同じ（ただしデフォルト値は colorize_model.pth となっている）．
 
 
 [upsampling_train.py]
@@ -173,7 +210,6 @@
   -e: sample.py と同じ（ただしデフォルト値は 10 となっている）．
   -b: sample.py と同じ．
   -m: mnist_train.py と同じ（ただしデフォルト値は upsampling_model.pth となっている）．
-  -s: 指定すると，各エポック終了後のモデルおよびアップサンプリング結果の例が upsampling_models/ 以下に自動保存されるようになる．
 
 
 [upsampling_exec.py]
@@ -194,14 +230,14 @@
       必須項目であり，指定しなかった場合はエラー終了する．
   -o: 出力画像（アップサンプリング結果）のファイルパス．
       必須項目であり，指定しなかった場合はエラー終了する．
-  -m: mnist_predict.py と同じ．
+  -m: mnist_predict.py と同じ（ただしデフォルト値は upsampling_model.pth となっている）．
 
 
 [denoise_train.py]
 
 ・内容： CIFAR10データセットを対象にノイズ除去処理用の AE を学習する．
-         次元圧縮に用いたネットワーク（autoencoders.py の myAutoEncoder クラス）を流用しており，性能は非常に低い．
-         上述のクラスをソースコード中で「from autoencoders import myAutoEncoder」とすることにより読み込んでいる．
+         ネットワーク構造は autoencoders.py の myDenoisingAE クラスで定義されており，
+         これをソースコード中で「from autoencoders import myDenoisingAE」とすることにより読み込んでいる．
 
 ・実行コマンド例
   python denoise_train.py -g=0 -e=10 -b=100 -m=denoise_model.pth
@@ -214,14 +250,13 @@
   -e: sample.py と同じ（ただしデフォルト値は 10 となっている）．
   -b: sample.py と同じ．
   -m: mnist_train.py と同じ（ただしデフォルト値は denoise_model.pth となっている）．
-  -s: 指定すると，各エポック終了後のモデルおよびノイズ除去結果の例が denoise_models/ 以下に自動保存されるようになる．
 
 
 [denoise_exec.py]
 
 ・内容： denoise_train.py で学習した AE を用いて実際にノイズ除去処理を行う．
-         次元圧縮に用いたネットワーク（autoencoders.py の myAutoEncoder クラス）を流用しており，性能は非常に低い．
-         上述のクラスをソースコード中で「from autoencoders import myAutoEncoder」とすることにより読み込んでいる．
+         ネットワーク構造は autoencoders.py の myDenoisingAE クラスで定義されており，
+         これをソースコード中で「from autoencoders import myDenoisingAE」とすることにより読み込んでいる．
 
 ・実行コマンド例
   python denoise_exec.py -g=0 -i=dataset/CIFAR10/test_data/00000.png -o=denoise_result.png -m=denoise_model.pth
@@ -235,14 +270,14 @@
       必須項目であり，指定しなかった場合はエラー終了する．
   -o: 出力画像（ノイズ除去結果）のファイルパス．
       必須項目であり，指定しなかった場合はエラー終了する．
-  -m: mnist_predict.py と同じ．
+  -m: mnist_predict.py と同じ（ただしデフォルト値は denoise_model.pth となっている）．
 
 
 [cnn.py]
 
 ・内容： 実行用のソースファイルではない．
-         mnist_train.py および mnist_predict.py で使用するDNNのネットワーク構造が定義されている．
-         myCNN クラスを編集することによりネットワーク構造を変更できる．
+         sample.py, mnist_train.py, mnist_predict.py, cifar10_train.py, cifar10_predict.py で使用するDNNのネットワーク構造が定義されている．
+         myMLP, myCNN, myCNN2 クラスを編集することによりネットワーク構造を変更できる．
 
 ・備考： 改善の余地を大きくするため，本プログラム中のネットワークは敢えて「弱く」作成している．
 
@@ -250,11 +285,12 @@
 [autoencoders.py]
 
 ・内容： 実行用のソースファイルではない．
-         compress_train.py ～ upsampling_exec.py で使用する AE のネットワーク構造が定義されている．
+         compress_train.py ～ denoise_exec.py で使用する AE のネットワーク構造が定義されている．
          それぞれ，次のクラスを編集することによりネットワーク構造を変更できる．
           * compress_train.py, compress_exec.py: myAutoEncoder クラス
           * colorize_train.py, colorize_exec.py: myColorizationAE クラス
           * upsampling_train.py, upsampling_exec.py: myUpSamplingAE クラス
+          * denoise_train.py, denoise_exec.py: myDenoisingAE クラス
 
 ・備考： 改善の余地を大きくするため，本プログラム中のネットワークは敢えて「弱く」作成している．
 
@@ -265,5 +301,11 @@
          畳込み層（Conv）やプーリング層（Pool），全結合層（FC）など，
          cnn.py および autoencoders.py で使用しているクラスの実体が定義されている．
          これらの内容と使い方については unit_layers.py 内に記載のコメントを参照のこと．
+
+
+[func.py]
+
+・内容： 実行用のソースファイルではない．
+         学習処理や推論処理の本体に相当する関数が記載されている．
 
 
