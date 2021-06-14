@@ -92,8 +92,8 @@
   python cifar10_predict.py -g=0 -b=100 -m=cifar10_model.pth
 
 ・実行コマンド例（Google Colaboratoryのセルで実行する場合）
-  %run mnist_predict.py -g=0 -i=dataset/MNIST/test_data/00000.png -m=mnist_model.pth
-  %run mnist_predict.py -g=0 -b=100 -m=mnist_model.pth
+  %run cifar10_predict.py -g=0 -i=dataset/MNIST/test_data/00000.png -m=mnist_model.pth
+  %run cifar10_predict.py -g=0 -b=100 -m=mnist_model.pth
 
 ・オプション
   -g: sample.py と同じ．

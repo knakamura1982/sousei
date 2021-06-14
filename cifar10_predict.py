@@ -34,7 +34,7 @@ MODEL_DIR = './cifar10_models/'
 if __name__ == '__main__':
 
     # コマンドライン引数のパース
-    parser = argparse.ArgumentParser(description = 'CNN Model for MNIST Image Recognition (Prediction)')
+    parser = argparse.ArgumentParser(description = 'CNN Model for CIFAR10 Image Recognition (Prediction)')
     parser.add_argument('--gpu', '-g', default=-1, type=int, help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--batchsize', '-b', default=100, type=int, help='learning minibatch size')
     parser.add_argument('--in_filepath', '-i', default='', type=str, help='input image file path')
