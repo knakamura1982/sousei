@@ -1,9 +1,11 @@
+import os
 import sys
 import math
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+from matplotlib import pyplot as plt
 from utils import save_progress
 from data_io import load_single_image, load_images
 
@@ -78,6 +80,8 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
             x_width = round(x_width * additional_conditions['input_scale'])
             x_height = round(x_height * additional_conditions['input_scale'])
             x_size = (x_width, x_height)
+        if 'input_size' in additional_conditions:
+            x_size = additional_conditions['input_size']
         if 'in_channels' in additional_conditions:
             x_channels = additional_conditions['in_channels']
         x_color_mode = 0 if x_channels == 1 else 1
@@ -96,6 +100,8 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
             y_width = round(y_width * additional_conditions['output_scale'])
             y_height = round(y_height * additional_conditions['output_scale'])
             y_size = (y_width, y_height)
+        if 'output_size' in additional_conditions:
+            y_size = additional_conditions['output_size']
         if 'out_channels' in additional_conditions:
             y_channels = additional_conditions['out_channels']
         y_color_mode = 0 if y_channels == 1 else 1
@@ -105,6 +111,8 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
         y_valid = to_nparray(y_valid)
 
     # 追加情報の確認
+    model_dir = './'
+    autosave = False
     x_with_noise = False
     y_with_noise = False
     x_noise_points = 0
@@ -115,12 +123,24 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
     if 'output_with_noise' in additional_conditions:
         y_with_noise = True
         y_noise_points = additional_conditions['output_with_noise']
+    if 'autosave_model' in additional_conditions:
+        autosave = True
+        if 'model_dir' in additional_conditions:
+            model_dir = additional_conditions['model_dir']
 
     # モデルをGPU上に移動
     model = model.to(device)
 
     # オプティマイザーの用意
     optimizer = optim.Adam(model.parameters())
+
+    # loss確認用グラフの用意
+    plt.title('Loss history')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.grid()
+    train_loss = []
+    valid_loss = []
 
     # 学習処理ループ
     for e in range(epochs):
@@ -159,6 +179,7 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
             del x
 
         # 損失関数の現在値を表示
+        train_loss.append(sum_loss / n_input)
         print('  train loss = {0:.6f}'.format(sum_loss / n_input), file=sys.stderr)
 
         # 検証用データを用いた場合の損失を計算・表示
@@ -209,12 +230,26 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
             del z
             del y
             del x
+        valid_loss.append(sum_loss / n_input)
         print('  valid loss = {0:.6f}'.format(sum_loss / n_input), file=sys.stderr)
         if calc_accuracy:
             acc = (n_samples_ev - n_failed) / n_samples_ev
             print('  accuracy = {0:.2f}%'.format(100 * acc), file=sys.stderr)
 
+        # 現在のモデルを保存する
+        if autosave:
+            torch.save(model.to('cpu').state_dict(), os.path.join(model_dir, 'model_ep{0}.pth'.format(e + 1)))
+            model = model.to(device)
+
         print('', file=sys.stderr)
+
+    # loss確認用グラフの表示
+    plt.plot(np.arange(1, epochs + 1), np.asarray(train_loss), label='train loss')
+    plt.plot(np.arange(1, epochs + 1), np.asarray(valid_loss), label='valid loss')
+    plt.legend(loc='upper right')
+    plt.pause(2)
+    plt.close()
+
 
     return model.to('cpu')
 
@@ -245,6 +280,8 @@ def predict(device, in_data, out_data, model, loss_func, batchsize, additional_c
             x_width = round(x_width * additional_conditions['input_scale'])
             x_height = round(x_height * additional_conditions['input_scale'])
             x_size = (x_width, x_height)
+        if 'input_size' in additional_conditions:
+            x_size = additional_conditions['input_size']
         if 'in_channels' in additional_conditions:
             x_channels = additional_conditions['in_channels']
         x_color_mode = 0 if x_channels == 1 else 1
@@ -262,6 +299,8 @@ def predict(device, in_data, out_data, model, loss_func, batchsize, additional_c
             y_width = round(y_width * additional_conditions['output_scale'])
             y_height = round(y_height * additional_conditions['output_scale'])
             y_size = (y_width, y_height)
+        if 'output_size' in additional_conditions:
+            y_size = additional_conditions['output_size']
         if 'out_channels' in additional_conditions:
             y_channels = additional_conditions['out_channels']
         y_color_mode = 0 if y_channels == 1 else 1
