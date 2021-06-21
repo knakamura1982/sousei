@@ -401,7 +401,7 @@ def predict_once(device, model, in_data, module=None):
         y = model.decode(x)
     else:
         y = model(x)
-    if len(y.size()) == 2:
+    if len(y.size()) == 2 and module != 'encode':
         y = F.softmax(y, dim=1)
     y_cpu = y.to('cpu').detach().numpy().copy()
     del y
