@@ -43,6 +43,8 @@ if __name__ == '__main__':
     target = args.target
     if target == 'MNIST':
         filename = 'MNIST.tar.gz'
+    elif target == 'ColoredMNIST':
+        filename = 'ColoredMNIST.tar.gz'
     elif target == 'CIFAR10':
         filename = 'CIFAR10.tar.gz'
     elif target == 'Place365':
@@ -63,6 +65,8 @@ if __name__ == '__main__':
         filename = 'Food101.tar.gz'
     elif target == 'LFW_Sub':
         filename = 'LFW_Sub.tar.gz'
+    elif target == 'fruits-360':
+        filename = 'fruits-360.tar.gz'
     else:
         print('error: {0} is an invalid dataset name.'.format(target), file=sys.stderr)
         exit()
