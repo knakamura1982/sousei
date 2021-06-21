@@ -111,7 +111,6 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
         y_valid = to_nparray(y_valid)
 
     # 追加情報の確認
-    model_dir = './'
     autosave = False
     x_with_noise = False
     y_with_noise = False
@@ -125,8 +124,6 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
         y_noise_points = additional_conditions['output_with_noise']
     if 'autosave_model' in additional_conditions:
         autosave = True
-        if 'model_dir' in additional_conditions:
-            model_dir = additional_conditions['model_dir']
 
     # モデルをGPU上に移動
     model = model.to(device)
@@ -134,11 +131,7 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
     # オプティマイザーの用意
     optimizer = optim.Adam(model.parameters())
 
-    # loss確認用グラフの用意
-    plt.title('Loss history')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.grid()
+    # loss確認用グラフの準備
     train_loss = []
     valid_loss = []
     accuracy = []
@@ -220,12 +213,12 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
                 if e == 0:
                     x_cpu = x.to('cpu').detach().numpy().copy()
                     y_cpu = y.to('cpu').detach().numpy().copy()
-                    save_progress(model_dir + 'input.png', x_cpu, n_data_max=25, n_data_per_row=5, mode=x_color_mode)
-                    save_progress(model_dir + 'ground_truth.png', y_cpu, n_data_max=25, n_data_per_row=5, mode=y_color_mode)
+                    save_progress(os.path.join(model_dir, 'input.png'), x_cpu, n_data_max=25, n_data_per_row=5, mode=x_color_mode)
+                    save_progress(os.path.join(model_dir, 'ground_truth.png'), y_cpu, n_data_max=25, n_data_per_row=5, mode=y_color_mode)
                     del x_cpu
                     del y_cpu
                 z_cpu = z.to('cpu').detach().numpy().copy()
-                save_progress(model_dir + 'output_ep{0}.png'.format(e + 1), z_cpu, n_data_max=25, n_data_per_row=5, mode=y_color_mode)
+                save_progress(os.path.join(model_dir, 'output_ep{0}.png'.format(e + 1)), z_cpu, n_data_max=25, n_data_per_row=5, mode=y_color_mode)
                 del z_cpu
             del loss
             del z
@@ -246,6 +239,10 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
         print('', file=sys.stderr)
 
     # loss確認用グラフの表示
+    plt.title('Loss history')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.grid()
     plt.plot(np.arange(1, epochs + 1), np.asarray(train_loss), label='train loss')
     plt.plot(np.arange(1, epochs + 1), np.asarray(valid_loss), label='valid loss')
     plt.legend(loc='upper right')
