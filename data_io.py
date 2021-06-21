@@ -112,7 +112,7 @@ def add_noise(img, mode, num):
     pts_x = np.random.randint(0, img.shape[1], num)
     pts_y = np.random.randint(0, img.shape[0], num)
     if mode == 0:
-        img[(pts_y, pts_x)] = (127 * np.random.randint(0, 3, (num, 1))).astype(np.uint8)
+        img[(pts_y, pts_x)] = (127 * np.random.randint(0, 3, num)).astype(np.uint8)
     else:
         img[(pts_y, pts_x)] = (127 * np.random.randint(0, 3, (num, 3))).astype(np.uint8)
     return img

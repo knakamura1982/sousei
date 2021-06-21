@@ -141,6 +141,7 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
     plt.grid()
     train_loss = []
     valid_loss = []
+    accuracy = []
 
     # 学習処理ループ
     for e in range(epochs):
@@ -234,6 +235,7 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
         print('  valid loss = {0:.6f}'.format(sum_loss / n_input), file=sys.stderr)
         if calc_accuracy:
             acc = (n_samples_ev - n_failed) / n_samples_ev
+            accuracy.append(100 * acc)
             print('  accuracy = {0:.2f}%'.format(100 * acc), file=sys.stderr)
 
         # 現在のモデルを保存する
@@ -250,6 +252,16 @@ def train(device, model_dir, in_data, out_data, model, loss_func, batchsize, epo
     plt.pause(2)
     plt.close()
 
+    # 精度確認用グラフの表示
+    if len(accuracy) == epochs:
+        plt.title('Accuracy history')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.grid()
+        plt.plot(np.arange(1, epochs + 1), np.asarray(accuracy), label='accuracy')
+        plt.legend(loc='upper left')
+        plt.pause(2)
+        plt.close()
 
     return model.to('cpu')
 
